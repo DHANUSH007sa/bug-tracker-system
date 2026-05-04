@@ -15,4 +15,9 @@ export const bugService = {
   deleteBug: (id) => api.delete(`/bugs/${id}`),
 };
 
+// Activity endpoints
+export const activityService = {
+  getActivities: () => api.get('/activity'),
+};
+
 export default api;

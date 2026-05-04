@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { bugService } from '../services/api';
+import { bugService, activityService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Dashboard.css';
 
@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, resolved: 0 });
   const [allBugs, setAllBugs] = useState([]);
   const [recentBugs, setRecentBugs] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,9 +20,27 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await bugService.getAllBugs();
-      const bugs = response.data;
       setError('');
+      let bugs = [];
+      let activitiesData = [];
+
+      // Fetch bugs with separate try/catch
+      try {
+        const bugsResponse = await bugService.getAllBugs();
+        bugs = bugsResponse.data || [];
+      } catch (err) {
+        console.error('Failed to load bugs:', err);
+        setError(err.response?.data?.message || 'Failed to load bugs');
+      }
+
+      // Fetch activities with separate try/catch
+      try {
+        const activitiesResponse = await activityService.getActivities();
+        activitiesData = activitiesResponse.data || [];
+      } catch (err) {
+        console.error('Failed to load activities:', err);
+        // Don't set error for activities - they're optional
+      }
 
       const bugStats = {
         total: bugs.length,
@@ -33,6 +52,7 @@ export default function Dashboard() {
       setStats(bugStats);
       setAllBugs(bugs);
       setRecentBugs(bugs.slice(0, 6));
+      setActivities(activitiesData.slice(0, 10));
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load dashboard data');
     } finally {
@@ -68,6 +88,44 @@ export default function Dashboard() {
     weekAgo.setDate(weekAgo.getDate() - 7);
     return createdDate >= weekAgo;
   }).length;
+
+  const timeAgo = (date) => {
+    const now = new Date();
+    const diff = now - new Date(date);
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  };
+
+  const getActivityMessage = (activity) => {
+    switch (activity.action) {
+      case 'created':
+        return `${activity.changedBy} created a new bug: ${activity.bugTitle}`;
+      case 'status changed':
+        return `${activity.changedBy} changed status of ${activity.bugTitle} from ${activity.oldValue} to ${activity.newValue}`;
+      case 'deleted':
+        return `${activity.changedBy} deleted bug: ${activity.bugTitle}`;
+      default:
+        return `${activity.changedBy} performed action on ${activity.bugTitle}`;
+    }
+  };
+
+  const getActivityIcon = (action) => {
+    switch (action) {
+      case 'created':
+        return '✅';
+      case 'status changed':
+        return '🔄';
+      case 'deleted':
+        return '🗑️';
+      default:
+        return '📝';
+    }
+  };
 
   if (loading)
     return (
@@ -245,6 +303,35 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div className="mt-8 overflow-hidden rounded-[2rem] bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-6 py-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Activity Log</h2>
+              <p className="mt-1 text-sm text-slate-500">Recent activities and changes in the system.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="divide-y divide-slate-200">
+          {activities.length === 0 ? (
+            <div className="px-6 py-8 text-center text-slate-500">No recent activities</div>
+          ) : (
+            activities.map((activity) => (
+              <div key={activity._id} className="flex items-start gap-4 px-6 py-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-lg">
+                  {getActivityIcon(activity.action)}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-slate-900">{getActivityMessage(activity)}</p>
+                  <p className="mt-1 text-xs text-slate-500">{timeAgo(activity.timestamp)}</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

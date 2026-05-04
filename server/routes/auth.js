@@ -24,13 +24,13 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ message: 'Email already in use' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role || 'reporter';
 
     const newUser = await User.create({
       name,
       email,
-      password: hashedPassword,
-      role,
+      password, // Plain password, will be hashed by pre-save hook
+      role: userRole,
     });
 
     const token = createToken(newUser._id);

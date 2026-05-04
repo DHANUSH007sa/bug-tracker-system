@@ -1,5 +1,6 @@
 const express = require('express');
 const Bug = require('../models/Bug');
+const Activity = require('../models/Activity');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -36,6 +37,13 @@ router.post('/', async (req, res) => {
       createdBy: req.user._id,
     });
 
+    await Activity.create({
+      bugId: bug._id,
+      bugTitle: bug.title,
+      action: 'created',
+      changedBy: req.user.name,
+    });
+
     res.status(201).json(bug);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -70,12 +78,24 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Bug not found' });
     }
 
+    const oldStatus = bug.status;
     const updates = ['title', 'description', 'severity', 'status', 'assignedTo', 'project'];
     updates.forEach((field) => {
       if (req.body[field] !== undefined) {
         bug[field] = req.body[field];
       }
     });
+
+    if (req.body.status !== undefined && req.body.status !== oldStatus) {
+      await Activity.create({
+        bugId: bug._id,
+        bugTitle: bug.title,
+        action: 'status changed',
+        changedBy: req.user.name,
+        oldValue: oldStatus,
+        newValue: req.body.status,
+      });
+    }
 
     await bug.save();
     res.json(bug);
@@ -95,6 +115,13 @@ router.delete('/:id', async (req, res) => {
     if (!bug) {
       return res.status(404).json({ message: 'Bug not found' });
     }
+
+    await Activity.create({
+      bugId: bug._id,
+      bugTitle: bug.title,
+      action: 'deleted',
+      changedBy: req.user.name,
+    });
 
     await bug.deleteOne();
     res.json({ message: 'Bug deleted successfully' });
