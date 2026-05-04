@@ -1,13 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { bugService } from '../services/api';
+import ConfirmDialog from '../components/ConfirmDialog';
+import Skeleton from '../components/Skeleton';
 
 export default function BugList() {
   const { user } = useAuth();
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, bug: null });
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({ status: 'all', severity: 'all', project: '' });
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -26,7 +30,9 @@ export default function BugList() {
       setBugs(response.data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch bugs');
+      const message = err.response?.data?.message || 'Failed to fetch bugs';
+      toast.error(message);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -50,6 +56,9 @@ export default function BugList() {
     });
 
     // Sort
+    const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+    const statusOrder = { open: 4, 'in-progress': 3, resolved: 2, closed: 1 };
+
     result.sort((a, b) => {
       let aValue = a[sortConfig.key];
       let bValue = b[sortConfig.key];
@@ -57,6 +66,16 @@ export default function BugList() {
       if (sortConfig.key === 'createdAt') {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
+      }
+
+      if (sortConfig.key === 'severity') {
+        aValue = severityOrder[aValue] || 0;
+        bValue = severityOrder[bValue] || 0;
+      }
+
+      if (sortConfig.key === 'status') {
+        aValue = statusOrder[aValue] || 0;
+        bValue = statusOrder[bValue] || 0;
       }
 
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -93,14 +112,19 @@ export default function BugList() {
     setCurrentPage(1);
   };
 
-  const handleDeleteBug = async (id) => {
-    if (confirm('Are you sure you want to delete this bug?')) {
-      try {
-        await bugService.deleteBug(id);
-        setBugs(bugs.filter((bug) => bug._id !== id));
-      } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete bug');
-      }
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete.bug) return;
+
+    try {
+      await bugService.deleteBug(confirmDelete.bug._id);
+      setBugs((prev) => prev.filter((bug) => bug._id !== confirmDelete.bug._id));
+      toast.success(`Deleted "${confirmDelete.bug.title}" successfully.`);
+      setConfirmDelete({ open: false, bug: null });
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to delete bug';
+      toast.error(message);
+      setError(message);
+      setConfirmDelete({ open: false, bug: null });
     }
   };
 
@@ -148,8 +172,25 @@ export default function BugList() {
 
   if (loading)
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="h-14 w-14 animate-spin rounded-full border-4 border-slate-200 border-t-sky-500" />
+      <div className="min-h-screen bg-slate-100 px-4 py-10 sm:px-6 lg:px-10">
+        <div className="space-y-6">
+          <div className="rounded-[1.75rem] bg-white p-6 shadow-sm">
+            <Skeleton width="40%" height="2.5rem" className="mb-6" />
+            <Skeleton width="100%" height="3rem" className="rounded-full" />
+          </div>
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+            {[...Array(8)].map((_, idx) => (
+              <div key={idx} className="flex items-center gap-4 border-b border-slate-200 px-4 py-5 last:border-b-0">
+                <Skeleton width="2.5rem" height="1rem" />
+                <Skeleton width="20%" height="1rem" />
+                <Skeleton width="14%" height="1rem" />
+                <Skeleton width="14%" height="1rem" />
+                <Skeleton width="14%" height="1rem" />
+                <Skeleton width="12%" height="1rem" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
 
@@ -234,6 +275,7 @@ export default function BugList() {
         </div>
       )}
 
+
       {/* Summary Bar */}
       <div className="mb-6 rounded-[1.75rem] border border-slate-200 bg-white px-6 py-4 shadow-sm">
         <p className="text-sm font-medium text-slate-700">
@@ -265,6 +307,14 @@ export default function BugList() {
         </div>
       ) : (
         <>
+          <ConfirmDialog
+            open={confirmDelete.open}
+            title="Delete Bug?"
+            message={`Are you sure you want to delete '${confirmDelete.bug?.title}'? This action cannot be undone.`}
+            onCancel={() => setConfirmDelete({ open: false, bug: null })}
+            onConfirm={handleConfirmDelete}
+          />
+
           {/* Table */}
           <div className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
             <div className="overflow-x-auto">
@@ -272,14 +322,7 @@ export default function BugList() {
                 <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600">
                   <tr>
                     <th className="px-6 py-4">#</th>
-                    <th
-                      className="cursor-pointer px-6 py-4 hover:bg-slate-100"
-                      onClick={() => handleSort('title')}
-                    >
-                      <div className="inline-flex items-center gap-2">
-                        Title <SortIcon columnKey="title" />
-                      </div>
-                    </th>
+                    <th className="px-6 py-4">Title</th>
                     <th className="px-6 py-4">Project</th>
                     <th
                       className="cursor-pointer px-6 py-4 hover:bg-slate-100"
@@ -303,7 +346,7 @@ export default function BugList() {
                       onClick={() => handleSort('createdAt')}
                     >
                       <div className="inline-flex items-center gap-2">
-                        Created <SortIcon columnKey="createdAt" />
+                        Date <SortIcon columnKey="createdAt" />
                       </div>
                     </th>
                     <th className="px-6 py-4">Actions</th>
@@ -361,7 +404,7 @@ export default function BugList() {
                           </button>
                           {canDelete && (
                             <button
-                              onClick={() => handleDeleteBug(bug._id)}
+                              onClick={() => setConfirmDelete({ open: true, bug })}
                               className="rounded-lg bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
                             >
                               Delete

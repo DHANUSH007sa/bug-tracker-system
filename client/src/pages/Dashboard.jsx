@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { bugService, activityService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Skeleton from '../components/Skeleton';
 import '../styles/Dashboard.css';
 
 export default function Dashboard() {
@@ -29,8 +31,9 @@ export default function Dashboard() {
         const bugsResponse = await bugService.getAllBugs();
         bugs = bugsResponse.data || [];
       } catch (err) {
-        console.error('Failed to load bugs:', err);
-        setError(err.response?.data?.message || 'Failed to load bugs');
+        const message = err.response?.data?.message || 'Failed to load bugs';
+        toast.error(message);
+        setError(message);
       }
 
       // Fetch activities with separate try/catch
@@ -38,7 +41,7 @@ export default function Dashboard() {
         const activitiesResponse = await activityService.getActivities();
         activitiesData = activitiesResponse.data || [];
       } catch (err) {
-        console.error('Failed to load activities:', err);
+        toast.error('Failed to load activities');
         // Don't set error for activities - they're optional
       }
 
@@ -54,7 +57,9 @@ export default function Dashboard() {
       setRecentBugs(bugs.slice(0, 6));
       setActivities(activitiesData.slice(0, 10));
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data');
+      const message = err.response?.data?.message || 'Failed to load dashboard data';
+      toast.error(message);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -130,8 +135,52 @@ export default function Dashboard() {
   if (loading)
     return (
       <div className="min-h-screen bg-slate-100 px-4 py-10 sm:px-6 lg:px-10">
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="h-14 w-14 animate-spin rounded-full border-4 border-slate-200 border-t-sky-500" />
+        <div className="space-y-6">
+          <div className="grid gap-4 xl:grid-cols-4">
+            {[...Array(4)].map((_, idx) => (
+              <div key={idx} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+                <Skeleton className="mb-4" width="5rem" height="1.5rem" />
+                <Skeleton width="6rem" height="2.5rem" />
+                <Skeleton className="mt-4" width="5rem" height="1rem" />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {[...Array(2)].map((_, idx) => (
+              <div key={idx} className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+                <Skeleton width="40%" height="1rem" className="mb-4" />
+                <Skeleton width="55%" height="2.5rem" />
+                <Skeleton className="mt-4" width="70%" height="1rem" />
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+            <Skeleton width="30%" height="1.25rem" className="mb-6" />
+            <div className="space-y-4">
+              {[...Array(5)].map((_, idx) => (
+                <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4">
+                  <Skeleton width="100%" height="1rem" />
+                  <Skeleton width="100%" height="1rem" />
+                  <Skeleton width="100%" height="1rem" />
+                  <Skeleton width="100%" height="1rem" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+            <Skeleton width="28%" height="1.25rem" className="mb-6" />
+            <div className="space-y-4">
+              {[...Array(3)].map((_, idx) => (
+                <div key={idx} className="rounded-[1.5rem] bg-slate-100 p-4">
+                  <Skeleton width="70%" height="1rem" className="mb-3" />
+                  <Skeleton width="50%" height="1rem" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

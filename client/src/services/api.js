@@ -20,4 +20,9 @@ export const activityService = {
   getActivities: () => api.get('/activity'),
 };
 
+// User endpoints
+export const userService = {
+  getUsers: () => api.get('/users'),
+};
+
 export default api;

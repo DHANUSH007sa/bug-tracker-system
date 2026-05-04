@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './pages/ProtectedRoute';
@@ -8,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import BugList from './pages/BugList';
 import CreateBug from './pages/CreateBug';
 import BugDetail from './pages/BugDetail';
+import NotFound from './pages/NotFound';
+import Unauthorized from './pages/Unauthorized';
 import './App.css';
 
 function AppRoutes() {
@@ -53,6 +56,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/403" element={<Unauthorized />} />
+      <Route path="*" element={<NotFound />} />
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
     </Routes>
   );
@@ -63,6 +68,18 @@ function App() {
     <Router>
       <AuthProvider>
         <Navbar />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              borderRadius: '16px',
+              background: '#ffffff',
+              color: '#0f172a',
+              boxShadow: '0 20px 50px rgba(15, 23, 42, 0.08)',
+            },
+          }}
+        />
         <AppRoutes />
       </AuthProvider>
     </Router>

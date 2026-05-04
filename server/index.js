@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const bugRoutes = require('./routes/bugs');
 const activityRoutes = require('./routes/activity');
+const usersRoutes = require('./routes/users');
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/bugs', bugRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/activity', activityRoutes);
 
 const PORT = process.env.PORT || 5000;
