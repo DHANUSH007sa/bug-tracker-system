@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import BugList from './pages/BugList';
 import CreateBug from './pages/CreateBug';
 import BugDetail from './pages/BugDetail';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
 import './App.css';
@@ -53,6 +55,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BugDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />

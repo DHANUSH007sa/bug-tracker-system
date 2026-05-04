@@ -82,7 +82,7 @@ export default function Navbar() {
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
-                      navigate('/dashboard');
+                      navigate('/profile');
                     }}
                     className="flex w-full items-center gap-3 px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-900"
                   >
@@ -93,7 +93,7 @@ export default function Navbar() {
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
-                      navigate('/dashboard');
+                      navigate('/settings');
                     }}
                     className="flex w-full items-center gap-3 px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-900"
                   >
@@ -174,7 +174,7 @@ export default function Navbar() {
               type="button"
               onClick={() => {
                 setMobileOpen(false);
-                navigate('/dashboard');
+                navigate('/profile');
               }}
               className="flex items-center gap-3 rounded-3xl px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-900"
             >
@@ -185,7 +185,7 @@ export default function Navbar() {
               type="button"
               onClick={() => {
                 setMobileOpen(false);
-                navigate('/dashboard');
+                navigate('/settings');
               }}
               className="flex items-center gap-3 rounded-3xl px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-900"
             >

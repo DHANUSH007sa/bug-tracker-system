@@ -24,14 +24,14 @@ export default function ConfirmDialog({ open, title, message, onCancel, onConfir
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-3xl border border-slate-300 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+            className="rounded-3xl bg-gray-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-600"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-3xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700"
+            className="rounded-3xl bg-red-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
           >
             Delete
           </button>

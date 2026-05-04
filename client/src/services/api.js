@@ -4,6 +4,8 @@ import api from '../api/axios';
 export const authService = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  updateProfile: (data) => api.put('/auth/profile', data),
+  updatePassword: (data) => api.put('/auth/password', data),
 };
 
 // Bug endpoints
