@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import BugList from './pages/BugList';
+import CreateBug from './pages/CreateBug';
 import BugDetail from './pages/BugDetail';
 import './App.css';
 
@@ -33,6 +34,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BugList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bugs/new"
+        element={
+          <ProtectedRoute>
+            <CreateBug />
           </ProtectedRoute>
         }
       />

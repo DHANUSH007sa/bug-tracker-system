@@ -27,6 +27,9 @@ export default function Navbar() {
               <Link to="/bugs" className="nav-link">
                 Bugs
               </Link>
+              <Link to="/bugs/new" className="nav-link">
+                Create Bug
+              </Link>
               <span className="user-info">{user?.name}</span>
               <button onClick={handleLogout} className="btn-logout">
                 Logout
