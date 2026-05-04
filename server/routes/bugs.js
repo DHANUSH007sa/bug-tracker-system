@@ -60,6 +60,10 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
+    if (!['developer', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Only developers and admins can update bugs' });
+    }
+
     const bug = await Bug.findById(req.params.id);
 
     if (!bug) {
@@ -82,6 +86,10 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can delete bugs' });
+    }
+
     const bug = await Bug.findById(req.params.id);
 
     if (!bug) {

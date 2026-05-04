@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { bugService } from '../services/api';
 import '../styles/BugList.css';
 
 export default function BugList() {
+  const { user } = useAuth();
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ status: 'all', severity: 'all', project: '' });
   const navigate = useNavigate();
+  const canDelete = user?.role === 'admin';
 
   const getSeverityColor = (severity) => {
     const colors = {
@@ -172,12 +175,14 @@ export default function BugList() {
                 >
                   View
                 </button>
-                <button
-                  onClick={() => handleDeleteBug(bug._id)}
-                  className="btn-delete"
-                >
-                  Delete
-                </button>
+                {canDelete && (
+                  <button
+                    onClick={() => handleDeleteBug(bug._id)}
+                    className="btn-delete"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}

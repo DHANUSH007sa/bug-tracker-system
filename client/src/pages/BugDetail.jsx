@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { bugService } from '../services/api';
 import '../styles/BugDetail.css';
 
 export default function BugDetail() {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [bug, setBug] = useState(null);
@@ -12,6 +14,7 @@ export default function BugDetail() {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({});
   const [statusValue, setStatusValue] = useState('open');
+  const canModify = ['developer', 'admin'].includes(user?.role);
 
   const getSeverityColor = (severity) => {
     const colors = {
@@ -141,28 +144,32 @@ export default function BugDetail() {
             <p><strong>Assigned To:</strong> {bug.assignedTo?.name || 'Unassigned'}</p>
           </div>
 
-          <div className="status-update">
-            <label htmlFor="status-select">Update Status</label>
-            <div className="status-actions">
-              <select
-                id="status-select"
-                value={statusValue}
-                onChange={handleStatusChange}
-              >
-                <option value="open">Open</option>
-                <option value="in-progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-              <button onClick={handleStatusUpdate} className="btn-update-status">
-                Save Status
-              </button>
+          {canModify && (
+            <div className="status-update">
+              <label htmlFor="status-select">Update Status</label>
+              <div className="status-actions">
+                <select
+                  id="status-select"
+                  value={statusValue}
+                  onChange={handleStatusChange}
+                >
+                  <option value="open">Open</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+                <button onClick={handleStatusUpdate} className="btn-update-status">
+                  Save Status
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
-          <button onClick={() => setIsEditing(true)} className="btn-edit">
-            Edit Bug
-          </button>
+          {canModify && (
+            <button onClick={() => setIsEditing(true)} className="btn-edit">
+              Edit Bug
+            </button>
+          )}
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="bug-form">
