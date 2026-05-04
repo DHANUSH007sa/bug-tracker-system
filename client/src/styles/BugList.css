@@ -8,12 +8,55 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .bug-list-header h2 {
   font-size: 2rem;
   color: #2c3e50;
+}
+
+.bug-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-item label {
+  font-weight: 600;
+  color: #34495e;
+}
+
+.filter-item input,
+.filter-item select {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.btn-reset {
+  background-color: #f3f4f6;
+  color: #2d3748;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn-reset:hover {
+  background-color: #e2e8f0;
 }
 
 .btn-create {
@@ -82,16 +125,22 @@
 
 .bug-meta {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
 .status-badge {
-  background-color: #3498db;
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
   font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.project-name {
+  color: #7f8c8d;
+  font-size: 0.9rem;
 }
 
 .project-name {
@@ -140,9 +189,17 @@
   font-size: 1.1rem;
 }
 
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: #7f8c8d;
-  font-size: 1.1rem;
+@media (max-width: 768px) {
+  .bug-list-container {
+    padding: 1rem;
+  }
+
+  .bugs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bug-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

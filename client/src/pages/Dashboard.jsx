@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ total: 0, open: 0, inProgress: 0, resolved: 0 });
   const [recentBugs, setRecentBugs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -19,6 +20,7 @@ export default function Dashboard() {
     try {
       const response = await bugService.getAllBugs();
       const bugs = response.data;
+      setError('');
 
       const bugStats = {
         total: bugs.length,
@@ -30,13 +32,18 @@ export default function Dashboard() {
       setStats(bugStats);
       setRecentBugs(bugs.slice(0, 5));
     } catch (err) {
-      console.error('Failed to fetch dashboard data:', err);
+      setError(err.response?.data?.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="loading">Loading dashboard...</div>;
+  if (loading)
+    return (
+      <div className="loading-screen">
+        <div className="spinner" />
+      </div>
+    );
 
   return (
     <div className="dashboard-container">
@@ -45,6 +52,7 @@ export default function Dashboard() {
         <p>Role: <strong>{user?.role}</strong></p>
       </div>
 
+      {error && <div className="error-message">{error}</div>}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total Bugs</h3>

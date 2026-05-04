@@ -12,6 +12,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .navbar-brand {
@@ -23,8 +25,21 @@
 
 .navbar-menu {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+
+  .navbar-menu {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
 }
 
 .nav-link {

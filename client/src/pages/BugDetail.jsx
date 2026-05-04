@@ -11,6 +11,32 @@ export default function BugDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({});
+  const [statusValue, setStatusValue] = useState('open');
+
+  const getSeverityColor = (severity) => {
+    const colors = {
+      low: '#22c55e',
+      medium: '#f59e0b',
+      high: '#f97316',
+      critical: '#ef4444',
+    };
+    return colors[severity] || '#64748b';
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      open: '#3b82f6',
+      'in-progress': '#facc15',
+      resolved: '#22c55e',
+      closed: '#64748b',
+    };
+    return colors[status] || '#64748b';
+  };
+
+  const getStatusLabel = (status) => {
+    if (status === 'in-progress') return 'In Progress';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   useEffect(() => {
     if (id && id !== 'new') {
@@ -26,6 +52,7 @@ export default function BugDetail() {
       const response = await bugService.getBugById(id);
       setBug(response.data);
       setFormData(response.data);
+      setStatusValue(response.data.status || 'open');
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch bug');
@@ -36,6 +63,23 @@ export default function BugDetail() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleStatusChange = (e) => {
+    setStatusValue(e.target.value);
+  };
+
+  const handleStatusUpdate = async () => {
+    if (!bug) return;
+
+    try {
+      await bugService.updateBug(id, { status: statusValue });
+      setBug({ ...bug, status: statusValue });
+      setError('');
+      alert('Status updated successfully!');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update status');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -54,7 +98,12 @@ export default function BugDetail() {
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading)
+    return (
+      <div className="loading-screen">
+        <div className="spinner" />
+      </div>
+    );
 
   return (
     <div className="bug-detail-container">
@@ -69,12 +118,48 @@ export default function BugDetail() {
           <h2>{bug.title}</h2>
           <div className="bug-info">
             <p><strong>Description:</strong> {bug.description}</p>
-            <p><strong>Severity:</strong> <span className="badge">{bug.severity}</span></p>
-            <p><strong>Status:</strong> <span className="badge">{bug.status}</span></p>
+            <p>
+              <strong>Severity:</strong>{' '}
+              <span
+                className="badge"
+                style={{ backgroundColor: getSeverityColor(bug.severity) }}
+              >
+                {bug.severity.charAt(0).toUpperCase() + bug.severity.slice(1)}
+              </span>
+            </p>
+            <p>
+              <strong>Status:</strong>{' '}
+              <span
+                className="badge"
+                style={{ backgroundColor: getStatusColor(bug.status) }}
+              >
+                {getStatusLabel(bug.status)}
+              </span>
+            </p>
             <p><strong>Project:</strong> {bug.project}</p>
             <p><strong>Created By:</strong> {bug.createdBy?.name}</p>
             <p><strong>Assigned To:</strong> {bug.assignedTo?.name || 'Unassigned'}</p>
           </div>
+
+          <div className="status-update">
+            <label htmlFor="status-select">Update Status</label>
+            <div className="status-actions">
+              <select
+                id="status-select"
+                value={statusValue}
+                onChange={handleStatusChange}
+              >
+                <option value="open">Open</option>
+                <option value="in-progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+              <button onClick={handleStatusUpdate} className="btn-update-status">
+                Save Status
+              </button>
+            </div>
+          </div>
+
           <button onClick={() => setIsEditing(true)} className="btn-edit">
             Edit Bug
           </button>
